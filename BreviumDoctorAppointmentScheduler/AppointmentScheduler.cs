@@ -2,10 +2,9 @@ namespace BreviumDoctorAppointmentScheduler;
 
 public class AppointmentScheduler(IAppointmentSchedulingClient client)
 {
-    private HashSet<(int, DateTimeOffset)> _scheduledDoctorAppointments = []; 
-    private Dictionary<int, SortedSet<DateTimeOffset>> _patientAppointments = [];
-    private readonly HashSet<DateTimeOffset> _allSlots = GenerateAllSlots();
-    private readonly HashSet<DateTimeOffset> _newSlots = GenerateNewSlots();
+    private readonly HashSet<(int, DateTimeOffset)> _scheduledDoctorAppointments = []; 
+    private readonly Dictionary<int, SortedSet<DateTimeOffset>> _patientAppointments = [];
+
     public async Task ExecuteAsync()
     {
         IEnumerable<DoctorAppointment> initialSchedule = await client.GetSchedule();
@@ -25,7 +24,6 @@ public class AppointmentScheduler(IAppointmentSchedulingClient client)
             {
                 if (!IsPatientInScheduleableWindow(inquiry, day))
                 {
-                    Console.WriteLine("request is not in window");
                     continue;
                 }
                 var startTime = inquiry.IsNew ? 15 : 8;
@@ -33,7 +31,7 @@ public class AppointmentScheduler(IAppointmentSchedulingClient client)
                 {
                     for (int doctor = 1; doctor <= 3; doctor++)
                     {
-                        if (IsTimeSlotAvailable(doctor, timeSlot, inquiry))
+                        if (IsTimeSlotAvailable(doctor, timeSlot))
                         {
                             appointmentTime = timeSlot;
                             doctorId = doctor;
@@ -77,7 +75,7 @@ public class AppointmentScheduler(IAppointmentSchedulingClient client)
         return !_patientAppointments.ContainsKey(inquiry.PersonId) || _patientAppointments[inquiry.PersonId].GetViewBetween(timeSlot.AddDays(-6), timeSlot.AddDays(6)).Count == 0;
     }
 
-    private bool IsTimeSlotAvailable(int doctorId, DateTimeOffset timeSlot, SchedulingInquiry inquiry)
+    private bool IsTimeSlotAvailable(int doctorId, DateTimeOffset timeSlot)
     {
         return !_scheduledDoctorAppointments.Contains((doctorId, timeSlot));
     }
@@ -90,40 +88,6 @@ public class AppointmentScheduler(IAppointmentSchedulingClient client)
         while (dateTime.Hour < 17)
         {
             slots.Add(dateTime);
-            dateTime = dateTime.AddHours(1);
-        }
-
-        return slots;
-    }
-
-    private static HashSet<DateTimeOffset> GenerateAllSlots()
-    {
-        var slots = new HashSet<DateTimeOffset>();
-        var dateTime = new DateTimeOffset(2021, 11, 1, 8, 0, 0, TimeSpan.Zero);
-        while (dateTime.Date <= new DateTime(2021, 12, 31))
-        {
-            if (dateTime.DayOfWeek != DayOfWeek.Saturday && dateTime.DayOfWeek != DayOfWeek.Sunday 
-                                                         && dateTime.Hour is >= 8 and < 17)
-            {
-                slots.Add(dateTime);
-            }
-            dateTime = dateTime.AddHours(1);
-        }
-
-        return slots;
-    }
-    
-    private static HashSet<DateTimeOffset> GenerateNewSlots()
-    {
-        var slots = new HashSet<DateTimeOffset>();
-        var dateTime = new DateTimeOffset(2021, 11, 1, 8, 0, 0, TimeSpan.Zero);
-        while (dateTime.Date <= new DateTime(2021, 12, 31))
-        {
-            if (dateTime.DayOfWeek != DayOfWeek.Saturday && dateTime.DayOfWeek != DayOfWeek.Sunday 
-                                                         && dateTime.Hour is >= 15 and < 17)
-            {
-                slots.Add(dateTime);
-            }
             dateTime = dateTime.AddHours(1);
         }
 
