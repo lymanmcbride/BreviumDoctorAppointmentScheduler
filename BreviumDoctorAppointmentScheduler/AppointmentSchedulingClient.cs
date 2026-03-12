@@ -6,7 +6,7 @@ namespace BreviumDoctorAppointmentScheduler;
 
 public class AppointmentSchedulingClient : IAppointmentSchedulingClient
 {
-    private const string ApiKey = "4c28e3bd-8530-49ea-936f-f3282d255a7f";
+    private const string ApiKey = "YOUR_API_KEY_HERE";
     private const string BaseApiDomain = "https://scheduling.interviews.brevium.com";
     private readonly HttpClient _client = new();
 
