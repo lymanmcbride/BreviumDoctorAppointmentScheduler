@@ -1,9 +1,10 @@
+using System.Net;
 using System.Text;
 using System.Text.Json;
 
 namespace BreviumDoctorAppointmentScheduler;
 
-public class AppointmentSchedulingClient
+public class AppointmentSchedulingClient : IAppointmentSchedulingClient
 {
     private const string ApiKey = "4c28e3bd-8530-49ea-936f-f3282d255a7f";
     private const string BaseApiDomain = "https://scheduling.interviews.brevium.com";
@@ -40,10 +41,14 @@ public class AppointmentSchedulingClient
         return await ValidateAndDeserialize<List<DoctorAppointment>>(response);
     }
 
-    public async Task<SchedulingInquiry> GetNextInquiry()
+    public async Task<SchedulingInquiry?> GetNextInquiry()
     {
         HttpResponseMessage response = await _client.GetAsync($"api/scheduling/appointmentrequest?token={ApiKey}");
-
+        if (response.StatusCode == HttpStatusCode.NoContent)
+        {
+            return null;
+        }
+        
         return await ValidateAndDeserialize<SchedulingInquiry>(response);
     }
     

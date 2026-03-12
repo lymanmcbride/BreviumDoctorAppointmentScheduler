@@ -8,4 +8,8 @@ var appointmentSchedulingClient = new AppointmentSchedulingClient();
 
 await appointmentSchedulingClient.Start();
 
-var schedule = await appointmentSchedulingClient.GetSchedule();
+var appointmentScheduler = new AppointmentScheduler(appointmentSchedulingClient);
+
+await appointmentScheduler.ExecuteAsync();
+
+Console.WriteLine("Done");
