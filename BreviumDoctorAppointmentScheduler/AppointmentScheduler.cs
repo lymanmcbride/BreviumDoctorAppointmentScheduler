@@ -37,7 +37,6 @@ public class AppointmentScheduler(IAppointmentSchedulingClient client)
                             doctorId = doctor;
                             break;
                         }
-                        Console.WriteLine("slot not available");
                     }
 
                     if (appointmentTime is not null)
